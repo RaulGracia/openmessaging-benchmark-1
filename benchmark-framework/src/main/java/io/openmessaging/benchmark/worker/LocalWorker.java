@@ -285,6 +285,7 @@ public class LocalWorker implements Worker, ConsumerCallback {
 
     @Override
     public void stopAll() {
+        log.info("Stopping local worker.");
         testCompleted = true;
         consumersArePaused = false;
         stats.reset();

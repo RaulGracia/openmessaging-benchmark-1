@@ -23,6 +23,7 @@ import io.openmessaging.benchmark.driver.BenchmarkDriver;
 import io.openmessaging.benchmark.driver.BenchmarkProducer;
 import io.openmessaging.benchmark.driver.ConsumerCallback;
 import io.openmessaging.benchmark.driver.pravega.config.PravegaConfig;
+import io.pravega.client.ByteStreamClientFactory;
 import io.pravega.client.ClientConfig;
 import io.pravega.client.EventStreamClientFactory;
 import io.pravega.client.admin.ReaderGroupManager;
@@ -35,6 +36,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.bookkeeper.stats.StatsLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,20 +52,22 @@ public class PravegaBenchmarkDriver implements BenchmarkDriver {
     private String scopeName;
     private StreamManager streamManager;
     private ReaderGroupManager readerGroupManager;
-    private EventStreamClientFactory clientFactory;
+    private final AtomicReference<AutoCloseable> clientFactory = new AtomicReference<>();
     private final List<String> createdTopics = new ArrayList<>();
 
     @Override
     public void initialize(File configurationFile, StatsLogger statsLogger) throws IOException {
         config = readConfig(configurationFile);
         log.info("Pravega driver configuration: {}", objectWriter.writeValueAsString(config));
-
         clientConfig =
                 ClientConfig.builder().controllerURI(URI.create(config.client.controllerURI)).build();
         scopeName = config.client.scopeName;
         streamManager = StreamManager.create(clientConfig);
         readerGroupManager = ReaderGroupManager.withScope(scopeName, clientConfig);
-        clientFactory = EventStreamClientFactory.withScope(scopeName, clientConfig);
+        clientFactory.set(
+                config.enableByteClient
+                        ? ByteStreamClientFactory.withScope(scopeName, clientConfig)
+                        : EventStreamClientFactory.withScope(scopeName, clientConfig));
     }
 
     private static final ObjectMapper mapper =
@@ -75,13 +79,13 @@ public class PravegaBenchmarkDriver implements BenchmarkDriver {
     }
 
     /**
-     * Clean Pravega stream name to only allow alpha-numeric and "-".
+     * Clean Pravega stream name to only allow alphanumeric and "-".
      *
      * @param name
      * @return the cleaned name
      */
     private String cleanName(String name) {
-        return name.replaceAll("[^A-Za-z0-9-]", "");
+        return name.replaceAll("[^A-Za-z0-9]", "");
     }
 
     @Override
@@ -120,11 +124,17 @@ public class PravegaBenchmarkDriver implements BenchmarkDriver {
     public CompletableFuture<BenchmarkProducer> createProducer(String topic) {
         topic = cleanName(topic);
         BenchmarkProducer producer = null;
+        if (config.enableByteClient) {
+            producer =
+                    new PravegaBenchmarkByteProducer(topic, (ByteStreamClientFactory) clientFactory.get());
+            return CompletableFuture.completedFuture(producer);
+        }
+
         if (config.enableTransaction) {
             producer =
                     new PravegaBenchmarkTransactionProducer(
                             topic,
-                            clientFactory,
+                            (EventStreamClientFactory) clientFactory.get(),
                             config.includeTimestampInEvent,
                             config.writer.enableConnectionPooling,
                             config.eventsPerTransaction);
@@ -132,7 +142,7 @@ public class PravegaBenchmarkDriver implements BenchmarkDriver {
             producer =
                     new PravegaBenchmarkProducer(
                             topic,
-                            clientFactory,
+                            (EventStreamClientFactory) clientFactory.get(),
                             config.includeTimestampInEvent,
                             config.writer.enableConnectionPooling);
         }
@@ -144,15 +154,22 @@ public class PravegaBenchmarkDriver implements BenchmarkDriver {
             String topic, String subscriptionName, ConsumerCallback consumerCallback) {
         topic = cleanName(topic);
         subscriptionName = cleanName(subscriptionName);
-        BenchmarkConsumer consumer =
-                new PravegaBenchmarkConsumer(
-                        topic,
-                        scopeName,
-                        subscriptionName,
-                        consumerCallback,
-                        clientFactory,
-                        readerGroupManager,
-                        config.includeTimestampInEvent);
+        BenchmarkConsumer consumer;
+        if (config.enableByteClient) {
+            consumer =
+                    new PravegaBenchmarkByteConsumer(
+                            topic, consumerCallback, (ByteStreamClientFactory) clientFactory.get());
+        } else {
+            consumer =
+                    new PravegaBenchmarkConsumer(
+                            topic,
+                            scopeName,
+                            subscriptionName,
+                            consumerCallback,
+                            (EventStreamClientFactory) clientFactory.get(),
+                            readerGroupManager,
+                            config.includeTimestampInEvent);
+        }
         return CompletableFuture.completedFuture(consumer);
     }
 
@@ -171,8 +188,8 @@ public class PravegaBenchmarkDriver implements BenchmarkDriver {
     @Override
     public void close() throws Exception {
         log.info("close: clientConfig={}", clientConfig);
-        if (clientFactory != null) {
-            clientFactory.close();
+        if (clientFactory.get() != null) {
+            clientFactory.get().close();
         }
         if (readerGroupManager != null) {
             readerGroupManager.close();

@@ -22,21 +22,20 @@ public class PravegaConfig {
     public PravegaWriterConfig writer;
 
     // includeTimestampInEvent must be true to measure end-to-end latency.
-    public boolean includeTimestampInEvent = true;
+    public boolean includeTimestampInEvent = false;
     public boolean enableTransaction = false;
     // defines how many events the benchmark writes on each transaction prior
     // committing it (only applies if transactional writers are enabled).
     public int eventsPerTransaction = 1;
-
+    // Uses the Byte client instead of EventWriter and EventReader
+    public boolean enableByteClient = true;
     // Enable the configuration of Streams with auto-scaling policies
     public boolean enableStreamAutoScaling = false;
     // Number of events/kbytes per second to trigger a Segment split in Pravega.
     public int eventsPerSecond = DEFAULT_STREAM_AUTOSCALING_VALUE;
     public int kbytesPerSecond = DEFAULT_STREAM_AUTOSCALING_VALUE;
-
     // Create a Pravega scope. Must set to false in Streaming Data Platform.
     public boolean createScope = true;
-
     // By default, streams created for benchmarking will be deleted at the end of the test.
     // Set to false to keep the streams.
     public boolean deleteStreams = true;
