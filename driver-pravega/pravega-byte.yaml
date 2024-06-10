@@ -12,15 +12,16 @@
 # limitations under the License.
 #
 
-# Build the Project
-#FROM maven:latest as build
-#COPY . /benchmark
-#WORKDIR /benchmark
-#RUN mvn install
+name: Pravega
+driverClass: io.openmessaging.benchmark.driver.pravega.PravegaBenchmarkDriver
 
-# Create the benchmark image
-FROM openjdk:8-jdk
-COPY /package/target/openmessaging-benchmark-*-SNAPSHOT-bin.tar.gz /
-RUN mkdir /benchmark && tar -xzf openmessaging-benchmark-*-SNAPSHOT-bin.tar.gz -C /benchmark --strip=1
-RUN rm /openmessaging-benchmark-*-SNAPSHOT-bin.tar.gz
-WORKDIR /benchmark
+# Pravega client-specific configuration
+client:
+  controllerURI: tcp://localhost:9090
+  scopeName: examples
+
+writer:
+  enableConnectionPooling: True
+
+enableByteClient: True
+eventsPerSecond: 10000

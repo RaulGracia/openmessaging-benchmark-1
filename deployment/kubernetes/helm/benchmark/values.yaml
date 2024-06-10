@@ -12,15 +12,15 @@
 # limitations under the License.
 #
 
-numWorkers: 8
-image: openmessaging/openmessaging-benchmark:latest
+numWorkers: 4
+image: raulgracia/openmessaging-benchmark:eks-benchmarks-pravega
 imagePullPolicy: Always
-workload: workloads/1-topic-16-partitions-1kb.yaml
-driver: driver-pulsar/pulsar.yaml
+workload: workloads/large-events-1MB-1-topic-1-partition.yaml
+driver: driver-pravega/pravega-byte.yaml
 
 # Resource Configurations
-driverMemoryRequest: 512Mi
-driverMemoryLimit: 2048Mi
+driverMemoryRequest: 8096Mi
+driverMemoryLimit: 8096Mi
 
-#workersMemoryRequest: 512Mi
-#workersMemoryLimit: 2048Mi
+workersMemoryRequest: 8096Mi
+workersMemoryLimit: 8096Mi

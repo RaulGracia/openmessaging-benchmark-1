@@ -12,15 +12,15 @@
 # limitations under the License.
 #
 
-# Build the Project
-#FROM maven:latest as build
-#COPY . /benchmark
-#WORKDIR /benchmark
-#RUN mvn install
+name: 1 topic / 1 partition / 100b
 
-# Create the benchmark image
-FROM openjdk:8-jdk
-COPY /package/target/openmessaging-benchmark-*-SNAPSHOT-bin.tar.gz /
-RUN mkdir /benchmark && tar -xzf openmessaging-benchmark-*-SNAPSHOT-bin.tar.gz -C /benchmark --strip=1
-RUN rm /openmessaging-benchmark-*-SNAPSHOT-bin.tar.gz
-WORKDIR /benchmark
+topics: 1
+partitionsPerTopic: 1
+messageSize: 1048576
+payloadFile: "payload/random_file.data"
+subscriptionsPerTopic: 1
+consumerPerSubscription: 1
+producersPerTopic: 1
+producerRate: 1
+consumerBacklogSizeGB: 0
+testDurationMinutes: 15
