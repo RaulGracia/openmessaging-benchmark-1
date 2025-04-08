@@ -30,7 +30,7 @@ public class FilePayloadReader implements PayloadReader {
     private static final AtomicInteger currentIndex = new AtomicInteger(0);
 
     public FilePayloadReader(int expectedLength) {
-        log.info("STARTING FilePayloadReader");
+        log.info("Starting FilePayloadReader with improved payload supplier.");
         this.expectedLength = expectedLength;
     }
 
@@ -69,14 +69,12 @@ public class FilePayloadReader implements PayloadReader {
         byte[] result = new byte[expectedLength];
 
         if (endIndex <= payloadLength) {
-            log.info("NORMAL ARRAYCOPY: ENDINDEX " + endIndex + " >= payload length " + payloadLength);
             System.arraycopy(fullPayload, startIndex, result, 0, expectedLength);
         } else {
             int firstPartLength = payloadLength - startIndex;
             System.arraycopy(fullPayload, startIndex, result, 0, firstPartLength);
             System.arraycopy(fullPayload, 0, result, firstPartLength, expectedLength - firstPartLength);
             currentIndex.set(expectedLength - firstPartLength);
-            log.info("RESETTING CURRENT INDEX " + currentIndex.get());
         }
 
         return result;
