@@ -16,10 +16,11 @@ package io.openmessaging.benchmark.worker.commands;
 
 import io.openmessaging.benchmark.utils.distributor.KeyDistributorType;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class ProducerWorkAssignment {
 
-    public List<byte[]> payloadData;
+    public List<Supplier<byte[]>> payloadData;
 
     public double publishRate;
 

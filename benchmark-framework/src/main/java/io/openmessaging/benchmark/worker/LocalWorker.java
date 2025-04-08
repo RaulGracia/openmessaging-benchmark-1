@@ -52,6 +52,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import org.apache.bookkeeper.stats.NullStatsLogger;
 import org.apache.bookkeeper.stats.StatsLogger;
@@ -194,7 +195,9 @@ public class LocalWorker implements Worker, ConsumerCallback {
     }
 
     private void submitProducersToExecutor(
-            List<BenchmarkProducer> producers, KeyDistributor keyDistributor, List<byte[]> payloads) {
+            List<BenchmarkProducer> producers,
+            KeyDistributor keyDistributor,
+            List<Supplier<byte[]>> payloads) {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         int payloadCount = payloads.size();
         executor.submit(
@@ -206,7 +209,7 @@ public class LocalWorker implements Worker, ConsumerCallback {
                                             messageProducer.sendMessage(
                                                     p,
                                                     Optional.ofNullable(keyDistributor.next()),
-                                                    payloads.get(r.nextInt(payloadCount))));
+                                                    payloads.get(r.nextInt(payloadCount)).get()));
                         }
                     } catch (Throwable t) {
                         log.error("Got error", t);

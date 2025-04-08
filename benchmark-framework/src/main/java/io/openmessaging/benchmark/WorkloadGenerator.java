@@ -113,10 +113,10 @@ public class WorkloadGenerator implements AutoCloseable {
                 r.nextBytes(randArray);
                 byte[] zerodArray = new byte[zerodBytes];
                 byte[] combined = ArrayUtils.addAll(randArray, zerodArray);
-                producerWorkAssignment.payloadData.add(combined);
+                producerWorkAssignment.payloadData.add(() -> combined);
             }
         } else {
-            producerWorkAssignment.payloadData.add(payloadReader.load(workload.payloadFile));
+            producerWorkAssignment.payloadData.add(() -> payloadReader.load(workload.payloadFile));
         }
 
         worker.startLoad(producerWorkAssignment);

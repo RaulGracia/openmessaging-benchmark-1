@@ -13,38 +13,72 @@
  */
 package io.openmessaging.benchmark.utils.payload;
 
-import static java.nio.file.Files.readAllBytes;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
+import java.nio.file.Files;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FilePayloadReader implements PayloadReader {
+    private static final Logger log = LoggerFactory.getLogger(FilePayloadReader.class);
 
     private final int expectedLength;
+    private static final AtomicReference<byte[]> payload = new AtomicReference<>();
+    private static final AtomicInteger currentIndex = new AtomicInteger(0);
 
     public FilePayloadReader(int expectedLength) {
+        log.info("STARTING FilePayloadReader");
         this.expectedLength = expectedLength;
     }
 
     @Override
     public byte[] load(String resourceName) {
-        byte[] payload;
-        try {
-            payload = readAllBytes(new File(resourceName).toPath());
-            checkPayloadLength(payload);
-            return payload;
-        } catch (IOException e) {
-            throw new PayloadException(e.getMessage());
-        }
+        initializePayload(resourceName);
+        return getNextPayloadSegment();
     }
 
-    private void checkPayloadLength(byte[] payload) {
-        if (expectedLength != payload.length) {
-            throw new PayloadException(
-                    MessageFormat.format(
-                            "Payload length mismatch. Actual is: {0}, but expected: {1} ",
-                            payload.length, expectedLength));
+    private void initializePayload(String resourceName) {
+        payload.updateAndGet(
+                existingPayload -> {
+                    if (existingPayload == null) {
+                        try {
+                            return Files.readAllBytes(new File(resourceName).toPath());
+                        } catch (IOException e) {
+                            throw new PayloadException(e.getMessage());
+                        }
+                    }
+                    return existingPayload;
+                });
+    }
+
+    private byte[] getNextPayloadSegment() {
+        byte[] fullPayload = payload.get();
+        int payloadLength = fullPayload.length;
+        int startIndex = currentIndex.getAndAdd(expectedLength);
+
+        // Wrap around if the end index exceeds the payload length
+        if (startIndex >= payloadLength) {
+            startIndex = startIndex % payloadLength;
+            currentIndex.set(expectedLength);
         }
+
+        int endIndex = startIndex + expectedLength;
+        byte[] result = new byte[expectedLength];
+
+        if (endIndex <= payloadLength) {
+            log.info("NORMAL ARRAYCOPY: ENDINDEX " + endIndex + " >= payload length " + payloadLength);
+            System.arraycopy(fullPayload, startIndex, result, 0, expectedLength);
+        } else {
+            int firstPartLength = payloadLength - startIndex;
+            System.arraycopy(fullPayload, startIndex, result, 0, firstPartLength);
+            System.arraycopy(fullPayload, 0, result, firstPartLength, expectedLength - firstPartLength);
+            currentIndex.set(expectedLength - firstPartLength);
+            log.info("RESETTING CURRENT INDEX " + currentIndex.get());
+        }
+
+        return result;
     }
 }
