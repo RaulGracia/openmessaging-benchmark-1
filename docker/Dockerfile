@@ -16,8 +16,9 @@ FROM openjdk:8-jdk
 
 ARG BENCHMARK_TARBALL
 
-ADD ${BENCHMARK_TARBALL} /benchmark
-
-#RUN mv ${BENCHMARK_TARBALL} /benchmark
-
 WORKDIR /benchmark
+
+COPY ${BENCHMARK_TARBALL} .
+
+RUN tar -xzf openmessaging-benchmark-*-SNAPSHOT-bin.tar.gz -C /benchmark --strip=1
+
