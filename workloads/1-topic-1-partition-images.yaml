@@ -1,0 +1,12 @@
+name: 1 topic / 1 partition / 100b
+
+topics: 1
+partitionsPerTopic: 1
+messageSize: 10  #This is used as switchAfterMB in ImagePayloadReader
+payloadFile: "payload/"
+subscriptionsPerTopic: 1
+consumerPerSubscription: 1
+producersPerTopic: 1
+producerRate: 100
+consumerBacklogSizeGB: 0
+testDurationMinutes: 1
