@@ -33,7 +33,7 @@ public class FilePayloadReader implements PayloadReader {
     private static final AtomicInteger currentIndex = new AtomicInteger(0);
 
     public FilePayloadReader(int expectedLength) {
-        //log.info("Starting FilePayloadReader with improved payload supplier.");
+        log.info("Starting FilePayloadReader with improved payload supplier.");
         this.expectedLength = expectedLength;
     }
 

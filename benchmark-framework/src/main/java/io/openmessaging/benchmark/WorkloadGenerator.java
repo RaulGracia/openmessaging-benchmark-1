@@ -449,7 +449,9 @@ public class WorkloadGenerator implements AutoCloseable {
             if (now >= testEndTime && !needToWaitForBacklogDraining) {
                 CumulativeLatencies agg = worker.getCumulativeLatencies();
                 log.info(
-                        "----- Aggregated Pub Latency (ms) avg: {} - 50%: {} - 95%: {} - 99%: {} - 99.9%: {} - 99.99%: {} - Max: {} | Pub Delay (us)  avg: {} - 50%: {} - 95%: {} - 99%: {} - 99.9%: {} - 99.99%: {} - Max: {}",
+                        "----- Aggregated Pub Latency (ms) avg: {} - 50%: {} - 95%: {} - 99%: {} - 99.9%: {} - 99.99%: {} - Max: {} | " +
+                        "Pub Delay (us)  avg: {} - 50%: {} - 95%: {} - 99%: {} - 99.9%: {} - 99.99%: {} - Max: {} | " +
+                        "Data Transferred: Bytes Sent {} - Messages Sent {}",
                         dec.format(agg.publishLatency.getMean() / 1000.0),
                         dec.format(agg.publishLatency.getValueAtPercentile(50) / 1000.0),
                         dec.format(agg.publishLatency.getValueAtPercentile(95) / 1000.0),
@@ -463,7 +465,9 @@ public class WorkloadGenerator implements AutoCloseable {
                         dec.format(agg.publishDelayLatency.getValueAtPercentile(99)),
                         dec.format(agg.publishDelayLatency.getValueAtPercentile(99.9)),
                         dec.format(agg.publishDelayLatency.getValueAtPercentile(99.99)),
-                        throughputFormat.format(agg.publishDelayLatency.getMaxValue()));
+                        throughputFormat.format(agg.publishDelayLatency.getMaxValue()),
+                        result.totalBytesSent,
+                        result.totalMessagesSent);
 
                 result.aggregatedPublishLatencyAvg = agg.publishLatency.getMean() / 1000.0;
                 result.aggregatedPublishLatency50pct = agg.publishLatency.getValueAtPercentile(50) / 1000.0;
