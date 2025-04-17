@@ -28,6 +28,11 @@ public class TestResult {
     public int producersPerTopic;
     public int consumersPerTopic;
 
+    public Long totalMessagesSent;
+    public Long totalBytesSent;
+    public Long totalBytesReceived;
+    public Long totalMessagesReceived;
+
     public List<Double> publishRate = new ArrayList<>();
     public List<Double> publishErrorRate = new ArrayList<>();
     public List<Double> consumeRate = new ArrayList<>();

@@ -15,8 +15,11 @@ package io.openmessaging.benchmark.utils.payload;
 
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
@@ -30,7 +33,7 @@ public class FilePayloadReader implements PayloadReader {
     private static final AtomicInteger currentIndex = new AtomicInteger(0);
 
     public FilePayloadReader(int expectedLength) {
-        log.info("Starting FilePayloadReader with improved payload supplier.");
+        //log.info("Starting FilePayloadReader with improved payload supplier.");
         this.expectedLength = expectedLength;
     }
 
@@ -78,5 +81,47 @@ public class FilePayloadReader implements PayloadReader {
         }
 
         return result;
+    }
+
+    // Main method for validation
+    public static void main(String[] args) throws Exception {
+        String testFilePath = "/home/raul/Documents/workspace/nexus-tiered-stream-manager/" +
+                "openmessaging-benchmark-1/payload/HDFS_100MB.log";
+        int expectedLength = 1024;
+
+        FilePayloadReader reader = new FilePayloadReader(expectedLength);
+
+        // Read multiple chunks and print/validate
+        byte[] fullPayload = Files.readAllBytes(Paths.get(testFilePath));
+        int fullLength = fullPayload.length;
+
+        System.out.println("Full Payload Length: " + fullLength);
+        System.out.println("Expected Segment Size: " + expectedLength);
+
+        int iterations = (int) Math.ceil((double) fullLength * 2 / expectedLength); // wraparound check
+        int offset = 0;
+
+        for (int i = 0; i < iterations; i++) {
+            byte[] segment = reader.load(testFilePath);
+
+            // 1. Validate size
+            if (segment.length != expectedLength) {
+                throw new RuntimeException("Segment size mismatch at iteration " + i);
+            }
+
+            // 2. Validate sequential content with wraparound
+            for (int j = 0; j < expectedLength; j++) {
+                byte expectedByte = fullPayload[(offset + j) % fullLength];
+                if (segment[j] != expectedByte) {
+                    throw new RuntimeException(String.format("Data mismatch at iteration %d, byte %d: expected %d, got %d",
+                            i, j, expectedByte, segment[j]));
+                }
+            }
+
+            System.out.printf("Segment %2d OK%n", i);
+            offset = (offset + expectedLength) % fullLength;
+        }
+
+        System.out.println("All segments verified successfully.");
     }
 }

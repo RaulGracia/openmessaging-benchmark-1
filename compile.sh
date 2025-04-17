@@ -1,0 +1,1 @@
+mvn clean verify package -X -DskipTests -Dlicense.skip -Dcheckstyle.skip -Dspotless.check.skip -Dspotbugs.skip=true
