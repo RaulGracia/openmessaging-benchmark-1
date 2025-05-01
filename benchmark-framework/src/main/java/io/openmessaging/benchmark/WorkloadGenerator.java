@@ -384,10 +384,10 @@ public class WorkloadGenerator implements AutoCloseable {
             result.totalMessagesReceived += stats.messagesReceived;
 
             log.info(
-                    "Pub rate {} msg/s / {} MB/s | Pub err {} err/s | Cons rate {} msg/s / {} MB/s | Backlog: {} K | " +
-                    "Pub Latency (ms) avg: {} - 50%: {} - 99%: {} - 99.9%: {} - Max: {} | " +
-                    "Pub Delay Latency (us) avg: {} - 50%: {} - 99%: {} - 99.9%: {} - Max: {} | " +
-                    "Data Transferred: Bytes Sent {} - Messages Sent {}",
+                    "Pub rate {} msg/s / {} MB/s | Pub err {} err/s | Cons rate {} msg/s / {} MB/s | Backlog: {} K | "
+                            + "Pub Latency (ms) avg: {} - 50%: {} - 99%: {} - 99.9%: {} - Max: {} | "
+                            + "Pub Delay Latency (us) avg: {} - 50%: {} - 99%: {} - 99.9%: {} - Max: {} | "
+                            + "Data Transferred: Bytes Sent {} - Messages Sent {}",
                     rateFormat.format(publishRate),
                     throughputFormat.format(publishThroughput),
                     rateFormat.format(errorRate),
@@ -449,9 +449,9 @@ public class WorkloadGenerator implements AutoCloseable {
             if (now >= testEndTime && !needToWaitForBacklogDraining) {
                 CumulativeLatencies agg = worker.getCumulativeLatencies();
                 log.info(
-                        "----- Aggregated Pub Latency (ms) avg: {} - 50%: {} - 95%: {} - 99%: {} - 99.9%: {} - 99.99%: {} - Max: {} | " +
-                        "Pub Delay (us)  avg: {} - 50%: {} - 95%: {} - 99%: {} - 99.9%: {} - 99.99%: {} - Max: {} | " +
-                        "Data Transferred: Bytes Sent {} - Messages Sent {}",
+                        "----- Aggregated Pub Latency (ms) avg: {} - 50%: {} - 95%: {} - 99%: {} - 99.9%: {} - 99.99%: {} - Max: {} | "
+                                + "Pub Delay (us)  avg: {} - 50%: {} - 95%: {} - 99%: {} - 99.9%: {} - 99.99%: {} - Max: {} | "
+                                + "Data Transferred: Bytes Sent {} - Messages Sent {}",
                         dec.format(agg.publishLatency.getMean() / 1000.0),
                         dec.format(agg.publishLatency.getValueAtPercentile(50) / 1000.0),
                         dec.format(agg.publishLatency.getValueAtPercentile(95) / 1000.0),

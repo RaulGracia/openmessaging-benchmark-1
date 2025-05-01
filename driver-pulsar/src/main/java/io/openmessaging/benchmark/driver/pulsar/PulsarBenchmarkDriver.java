@@ -42,6 +42,7 @@ import org.apache.pulsar.client.admin.PulsarAdminBuilder;
 import org.apache.pulsar.client.admin.PulsarAdminException;
 import org.apache.pulsar.client.admin.PulsarAdminException.ConflictException;
 import org.apache.pulsar.client.api.ClientBuilder;
+import org.apache.pulsar.client.api.CompressionType;
 import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.ProducerBuilder;
 import org.apache.pulsar.client.api.PulsarClient;
@@ -124,7 +125,8 @@ public class PulsarBenchmarkDriver implements BenchmarkDriver {
                         .batchingMaxBytes(config.producer.batchingMaxBytes)
                         .blockIfQueueFull(config.producer.blockIfQueueFull)
                         .sendTimeout(0, TimeUnit.MILLISECONDS)
-                        .maxPendingMessages(config.producer.pendingQueueSize);
+                        .maxPendingMessages(config.producer.pendingQueueSize)
+                        .compressionType(CompressionType.valueOf(config.producer.compressionType));
 
         try {
             // Create namespace and set the configuration

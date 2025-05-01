@@ -25,9 +25,9 @@ client:
   namespacePrefix: benchmark/ns
   topicType: persistent
   persistence:
-    ensembleSize: 3
-    writeQuorum: 3
-    ackQuorum: 2
+    ensembleSize: 1
+    writeQuorum: 1
+    ackQuorum: 1
     deduplicationEnabled: false
   tlsAllowInsecureConnection: false
   tlsEnableHostnameVerification: false
@@ -43,6 +43,7 @@ producer:
   batchingMaxBytes: 131072
   blockIfQueueFull: true
   pendingQueueSize: 0
+  compressionType: LZ4 # NONE, LZ4, ZLIB, ZSTD, SNAPPY
 
 consumer:
   receiverQueueSize: 10000

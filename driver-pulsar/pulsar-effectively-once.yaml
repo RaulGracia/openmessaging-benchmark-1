@@ -41,6 +41,7 @@ producer:
   batchingEnabled: true
   batchingMaxPublishDelayMs: 1
   blockIfQueueFull: true
+  compressionType: NONE # NONE, LZ4, ZLIB, ZSTD, SNAPPY
 
 consumer:
   receiverQueueSize: 10000

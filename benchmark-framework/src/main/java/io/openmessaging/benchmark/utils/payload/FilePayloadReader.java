@@ -13,13 +13,9 @@
  */
 package io.openmessaging.benchmark.utils.payload;
 
-
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
@@ -84,7 +80,7 @@ public class FilePayloadReader implements PayloadReader {
     }
 
     // Main method for validation
-    public static void main(String[] args) throws Exception {
+    /*public static void main(String[] args) throws Exception {
         String testFilePath = "/home/raul/Documents/workspace/nexus-tiered-stream-manager/" +
                 "openmessaging-benchmark-1/payload/HDFS_100MB.log";
         int expectedLength = 1024;
@@ -113,8 +109,8 @@ public class FilePayloadReader implements PayloadReader {
             for (int j = 0; j < expectedLength; j++) {
                 byte expectedByte = fullPayload[(offset + j) % fullLength];
                 if (segment[j] != expectedByte) {
-                    throw new RuntimeException(String.format("Data mismatch at iteration %d, byte %d: expected %d, got %d",
-                            i, j, expectedByte, segment[j]));
+                    throw new RuntimeException(String.format("Data mismatch at iteration %d, byte %d: expected %d,
+                    got %d", i, j, expectedByte, segment[j]));
                 }
             }
 
@@ -123,5 +119,5 @@ public class FilePayloadReader implements PayloadReader {
         }
 
         System.out.println("All segments verified successfully.");
-    }
+    }*/
 }
